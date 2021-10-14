@@ -81,4 +81,20 @@ def rotation(oldVector, theta):
 
     return newVector
 
-#def cosine_d
+def cosine_distribution(cosPower):
+
+    rand1 = random.random()
+    rand2 = random.random()
+
+    phi = rand1*2*math.pi
+
+    x = rand2**(1/(cosPower+1))
+
+    theta = math.cos(x)
+
+    vector = float(0,0,0)
+    vector[0] = (math.sin(theta))*(math.cos(phi))
+    vector[1] = (math.sin(theta))*(math.sin(phi))
+    vector[2] = math.cos(theta)
+
+    return vector
