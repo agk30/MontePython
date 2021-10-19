@@ -1,6 +1,7 @@
 import random
 import math
 import scipy.constants
+import numpy
 
 def ingoing_speed(x0,aMax, aMin, h, s, dist, pulseLength):
 
@@ -70,7 +71,6 @@ def lorentzian_distribution(gamma):
 
 # This method apparently is very efficient, however it generates two Gaussian distributed numbers at a time
 # Make sure this is incorporated somehow to avoid wasting cycles
-# "Appropriated" from numerical recipes
 def gaussian_dsitribution(mean, sigma):
 
     hit = False
@@ -93,3 +93,32 @@ def gaussian_dsitribution(mean, sigma):
             hit = True
 
     return z1, z2
+
+def transverse_speed(mean, sigma, gamma, l_g_fraction, zPos, travelDistance, startTime, speed, startPoint, vector):
+
+    startTime = (startTime + abs(travelDistance/(vector[2]*speed)))
+    startPoint[0] = startPoint[0] + (startTime*speed*vector[0])
+    startPoint[1] = startPoint[1] + (startTime*speed*vector[1])
+    startPoint[2] = zPos
+
+    vector = vector*speed
+
+    rand = random.random()
+
+    if rand > l_g_fraction:
+        transSpeed = lorentzian_distribution(gamma)
+    else:
+        transSpeed = gaussian_dsitribution(mean, sigma)
+
+    vector[0] = transSpeed
+
+    if rand > l_g_fraction:
+        transSpeed = lorentzian_distribution(gamma)
+    else:
+        transSpeed = gaussian_dsitribution(mean, sigma)
+
+    vector[1] = transSpeed
+
+    vector = vector/numpy.linalg.norm(vector)
+
+    return vector
