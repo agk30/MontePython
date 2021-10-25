@@ -20,7 +20,7 @@ def construct_kernel(row, column, kSize, padMatrix):
     return wrapKernel
 
 
-def multi_sav_gol(kSize):
+def savgol_coef_array(kSize):
 
     # nd is points on either side of interrogation point, nk is 
     nd = (kSize-1)/2
@@ -28,6 +28,23 @@ def multi_sav_gol(kSize):
 
     # reads in coefficient matrix
     coef_file = open("../sg_matrices/2D/CC_003x003_001x001.dat", "r")
+
+    # for matrix file, if line starts with #, it is ignored and the coefficent data are read
+    coef_list = []
+    for line in coef_file:
+        # remove whitespace at start of line
+        li=line.strip()
+        # ignores commented lines
+        if not li.startswith("#"):
+            # removes S or A at beginning since we only need first line
+            li = li[1:].strip()
+            # turns stirng into floats
+            f_list = [float(i) for i in li.split("	")]
+            coef_list.append(f_list)
+
+    kSize = 5
+
+    coef_file = open("sg_matrices/2D/CC_005x005_003x003.dat", "r")
 
     # for matrix file, if line starts with #, it is ignored and the coefficent data are read
     coef_list = []
@@ -42,40 +59,34 @@ def multi_sav_gol(kSize):
             f_list = [float(i) for i in li.split("	")]
             coef_list.append(f_list)
 
-kSize = 5
+    # create numpy matrices needed
+    # full matrix has all points in kernel (n) but single symmetric array is needed with length of (n-1)/2,
+    # then a reversed array of the same length is used to fill out the other half of the full array
+    coef_matrix = numpy.zeros((len(coef_list[0])))
+    full_coef_matrix = numpy.zeros((kSize**2))
+    rev_matrix = numpy.zeros((len(coef_list[0])))
 
-coef_file = open("sg_matrices/2D/CC_005x005_003x003.dat", "r")
+    coef_matrix = coef_list[0]
+    rev_matrix = numpy.flip(coef_matrix)
 
-# for matrix file, if line starts with #, it is ignored and the coefficent data are read
-coef_list = []
-for line in coef_file:
-    # remove whitespace at start of line
-    li=line.strip()
-    # ignors commented lines
-    if not li.startswith("#"):
-        # removes S or A at beginning since we only need first line
-        li = li[1:].strip()
-        # turns stirng into floats
-        f_list = [float(i) for i in li.split("	")]
-        coef_list.append(f_list)
+    for i in range(int(len(coef_matrix)*2)-1):
+        if i < len(coef_matrix):
+            full_coef_matrix[i] = coef_matrix[i]
+        else:
+            full_coef_matrix[i] = rev_matrix[i-(int(((kSize**2)-1)/2))]
 
-# create numpy matrices needed
-# full matrix has all points in kernel (n) but single symmetric array is needed with length of (n-1)/2,
-# then a reversed array of the same length is used to fill out the other half of the full array
-coef_matrix = numpy.zeros((len(coef_list[0])))
-full_coef_matrix = numpy.zeros((kSize**2))
-rev_matrix = numpy.zeros((len(coef_list[0])))
+    return full_coef_matrix
 
-coef_matrix = coef_list[0]
-rev_matrix = numpy.flip(coef_matrix)
+def multi_sav_gol(xPx, yPx, kSize):
 
-for i in range(int(len(coef_matrix)*2)-1):
-    print (i)
-    if i < len(coef_matrix):
-        full_coef_matrix[i] = coef_matrix[i]
-    else:
-        full_coef_matrix[i] = rev_matrix[i-(int(((kSize**2)-1)/2))]
+    nd = (kSize-1)/2
 
-print(full_coef_matrix)
+    matrix_file = open("D:/Scattering Images/2021-10-21_112004/Blurred Images/Image_077.txt", "r")
 
+    matrix = numpy.zeros((xPx),(yPx))
+    padMatrix = numpy.zeros((xPx+nd),(yPx+nd))
 
+    for line in matrix:
+        li=line.strip()
+        matrix_line = [float(i) for i in li.split("  ")]
+        matrix.append(matrix_line)
