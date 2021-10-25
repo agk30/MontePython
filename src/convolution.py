@@ -2,16 +2,17 @@ import numpy
 
 def construct_kernel(row, column, kSize, padMatrix):
 
-    if (kSize % 2) != 0:
+    if (kSize % 2) == 0:
         print("Kernel size must be an odd integer")
 
         return
 
+    # BROKEN AF FIX IT PLS
     # kernel is output as a 1D array in wraparound oder
-    wrapKernel = [[kSize,kSize]]
+    wrapKernel = numpy.zeros((kSize**2))
 
-    for i in range(len(kSize)):
-        for j in range(len(kSize)):
+    for i in range(kSize):
+        for j in range(kSize):
             wrapKernel[((i-1)*kSize)+j] = padMatrix[(row+i), (column+j)]
 
     return wrapKernel
@@ -39,9 +40,7 @@ def savgol_coef_array(kSize):
             f_list = [float(i) for i in li.split("	")]
             coef_list.append(f_list)
 
-    kSize = 5
-
-    coef_file = open("sg_matrices/2D/CC_005x005_003x003.dat", "r")
+    coef_file = open("../sg_matrices/2D/CC_005x005_003x003.dat", "r")
 
     # for matrix file, if line starts with #, it is ignored and the coefficent data are read
     coef_list = []
@@ -76,30 +75,34 @@ def savgol_coef_array(kSize):
 
 def multi_sav_gol(xPx, yPx, kSize):
 
-    nd = (kSize-1)/2
+    nd = int((kSize-1)/2)
 
     matrix_file = open("D:/Scattering Images/2021-10-21_112004/Blurred Images/Image_077.txt", "r")
 
-    matrix = numpy.zeros((xPx),(yPx))
-    padMatrix = numpy.zeros((xPx+nd),(yPx+nd))
+    matrix = numpy.zeros((xPx,yPx))
+    padMatrix = numpy.zeros((xPx+nd,yPx+nd))
 
+    i = 0
     for line in matrix_file:
         li=line.strip()
         matrix_line = [float(i) for i in li.split("  ")]
-        matrix.append(matrix_line)
+        matrix[i,:] = (matrix_line)
+        i = i+1
 
-    for i in range(xPx+nd):
-        for j in range(yPx+nd):
+    for i in range(xPx):
+        for j in range(yPx):
             padMatrix[i+nd,j+nd] = matrix[i,j]
 
-    kernel = numpy.zeros((kSize))
+    #kernel = numpy.zeros((kSize))
     coef_array = numpy.zeros((kSize))
 
     for i in range(xPx+nd):
         for j in range(yPx+nd):
             kernel = construct_kernel(i+nd, j+nd, kSize, padMatrix)
             coef_array = savgol_coef_array(kSize)
-            interrogate_point = numpy.matmul(kernel, coef_array)
+            #print (kernel)
+            #print (coef_array)
+            interrogate_point = numpy.dot(kernel, coef_array)
             matrix[i,j] = interrogate_point
 
     return matrix
