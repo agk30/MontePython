@@ -7,9 +7,6 @@ def construct_kernel(row, column, kSize, padMatrix):
 
         return
 
-    # nd = kernel size minus 1, divided by 2
-    #nd = (kSize - 1)/2
-
     # kernel is output as a 1D array in wraparound oder
     wrapKernel = [[kSize,kSize]]
 
@@ -86,7 +83,28 @@ def multi_sav_gol(xPx, yPx, kSize):
     matrix = numpy.zeros((xPx),(yPx))
     padMatrix = numpy.zeros((xPx+nd),(yPx+nd))
 
-    for line in matrix:
+    for line in matrix_file:
         li=line.strip()
         matrix_line = [float(i) for i in li.split("  ")]
         matrix.append(matrix_line)
+
+    for i in range(xPx+nd):
+        for j in range(yPx+nd):
+            padMatrix[i+nd,j+nd] = matrix[i,j]
+
+    kernel = numpy.zeros((kSize))
+    coef_array = numpy.zeros((kSize))
+
+    for i in range(xPx+nd):
+        for j in range(yPx+nd):
+            kernel = construct_kernel(i+nd, j+nd, kSize, padMatrix)
+            coef_array = savgol_coef_array(kSize)
+            interrogate_point = numpy.matmul(kernel, coef_array)
+            matrix[i,j] = interrogate_point
+
+    return matrix
+xPx = int(420)
+yPx = int(420)
+kSize = int(5)
+
+matrix = multi_sav_gol(xPx,yPx,kSize)
