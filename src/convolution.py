@@ -19,12 +19,8 @@ def construct_kernel(row, column, kSize, padMatrix):
 
 def savgol_coef_array(kSize):
 
-    # nd is points on either side of interrogation point, nk is 
-    nd = (kSize-1)/2
-    nk = ((kSize**2) - 1)/2
-
     # reads in coefficient matrix
-    coef_file = open("../sg_matrices/2D/CC_003x003_001x001.dat", "r")
+    coef_file = open("C:/Users/adam/Documents/Code/MontePython/sg_matrices/2D/CC_027x027_003x003.dat", "r")
 
     # for matrix file, if line starts with #, it is ignored and the coefficent data are read
     coef_list = []
@@ -39,20 +35,7 @@ def savgol_coef_array(kSize):
             f_list = [float(i) for i in li.split("	")]
             coef_list.append(f_list)
 
-    coef_file = open("../sg_matrices/2D/CC_005x005_003x003.dat", "r")
-
-    # for matrix file, if line starts with #, it is ignored and the coefficent data are read
-    coef_list = []
-    for line in coef_file:
-        # remove whitespace at start of line
-        li=line.strip()
-        # ignors commented lines
-        if not li.startswith("#"):
-            # removes S or A at beginning since we only need first line
-            li = li[1:].strip()
-            # turns stirng into floats
-            f_list = [float(i) for i in li.split("	")]
-            coef_list.append(f_list)
+    coef_file.close()
 
     # create numpy matrices needed
     # full matrix has all points in kernel (n) but single symmetric array is needed with length of (n-1)/2,
@@ -75,13 +58,10 @@ def savgol_coef_array(kSize):
 
     return full_coef_matrix
 
-def multi_sav_gol(xPx, yPx, kSize):
+def multi_sav_gol(xPx, yPx, kSize, matrix_file, kernel):
 
     # easier to use nd sometimes, calculates once instead of twice! WOW
     nd = int((kSize-1)/2)
-
-    # might change this to some while statement
-    matrix_file = open("D:/Scattering Images/2021-10-21_112004/Blurred Images/Image_083.txt", "r")
 
     # matrix is initiated along with the padded matrix containing zeros all around to acommodate the kernel at the edges
     matrix = numpy.zeros((xPx,yPx))
@@ -91,7 +71,7 @@ def multi_sav_gol(xPx, yPx, kSize):
     i = 0
     for line in matrix_file:
         li=line.strip()
-        matrix_line = [float(i) for i in li.split("  ")]
+        matrix_line = [float(i) for i in li.split("	")]
         matrix[i][0:] = (matrix_line)
         i = i+1
 
@@ -110,18 +90,7 @@ def multi_sav_gol(xPx, yPx, kSize):
     # this leaves the new convoluted point in the processed image
     for i in range(xPx):
         for j in range(yPx):
-            kernel = construct_kernel(i, j, kSize, padMatrix)
             interrogate_point = numpy.dot(kernel, coef_array)
             matrix[i][j] = interrogate_point
 
     return matrix
-"""xPx = int(420)
-yPx = int(420)
-kSize = int(5)
-
-matrix = multi_sav_gol(xPx,yPx,kSize)
-
-print (matrix[209][205])
-
-with open('outfile.txt','wb') as f:
-    numpy.savetxt(f, matrix, fmt='%.5e')"""
