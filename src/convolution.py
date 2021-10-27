@@ -7,7 +7,6 @@ def construct_kernel(row, column, kSize, padMatrix):
 
         return
 
-    # BROKEN AF FIX IT PLS
     # kernel is output as a 1D array in wraparound oder
     wrapKernel = numpy.zeros((kSize**2))
 
@@ -62,9 +61,12 @@ def savgol_coef_array(kSize):
     full_coef_matrix = numpy.zeros((kSize**2))
     rev_matrix = numpy.zeros((len(coef_list[0])))
 
+    # coef_list has multiple dimensions, only top row is needed as the rest are to do with calculating derivatives
     coef_matrix = coef_list[0]
+    # matrix is flipped to allow the other half to be written over more easily
     rev_matrix = numpy.flip(coef_matrix)
 
+    # full coef matrix is written, extending the data from the file over to all pixels used in the kernel
     for i in range(int(len(coef_matrix)*2)-1):
         if i < len(coef_matrix):
             full_coef_matrix[i] = coef_matrix[i]
@@ -75,39 +77,51 @@ def savgol_coef_array(kSize):
 
 def multi_sav_gol(xPx, yPx, kSize):
 
+    # easier to use nd sometimes, calculates once instead of twice! WOW
     nd = int((kSize-1)/2)
 
-    matrix_file = open("D:/Scattering Images/2021-10-21_112004/Blurred Images/Image_077.txt", "r")
+    # might change this to some while statement
+    matrix_file = open("D:/Scattering Images/2021-10-21_112004/Blurred Images/Image_083.txt", "r")
 
+    # matrix is initiated along with the padded matrix containing zeros all around to acommodate the kernel at the edges
     matrix = numpy.zeros((xPx,yPx))
-    padMatrix = numpy.zeros((xPx+nd,yPx+nd))
+    padMatrix = numpy.zeros((xPx+kSize-1,yPx+kSize-1))
 
+    # think of a better way to do this. I mean, it works but it doesn't feel right
     i = 0
     for line in matrix_file:
         li=line.strip()
         matrix_line = [float(i) for i in li.split("  ")]
-        matrix[i,:] = (matrix_line)
+        matrix[i][0:] = (matrix_line)
         i = i+1
 
+    # tidy up by closing matrix file
+    matrix_file.close()
+
+    # assign padded matrix points from original image
     for i in range(xPx):
         for j in range(yPx):
-            padMatrix[i+nd,j+nd] = matrix[i,j]
+            padMatrix[i+nd][j+nd] = matrix[i][j]
 
-    #kernel = numpy.zeros((kSize))
-    coef_array = numpy.zeros((kSize))
+    # generate savgol coef array only once, used for duration of process
+    coef_array = savgol_coef_array(kSize)
 
-    for i in range(xPx+nd):
-        for j in range(yPx+nd):
-            kernel = construct_kernel(i+nd, j+nd, kSize, padMatrix)
-            coef_array = savgol_coef_array(kSize)
-            #print (kernel)
-            #print (coef_array)
+    # convolute image array by generating a kernel around interrogated point, then finding dot product with convolution matrix.
+    # this leaves the new convoluted point in the processed image
+    for i in range(xPx):
+        for j in range(yPx):
+            kernel = construct_kernel(i, j, kSize, padMatrix)
             interrogate_point = numpy.dot(kernel, coef_array)
-            matrix[i,j] = interrogate_point
+            matrix[i][j] = interrogate_point
 
     return matrix
-xPx = int(420)
+"""xPx = int(420)
 yPx = int(420)
 kSize = int(5)
 
 matrix = multi_sav_gol(xPx,yPx,kSize)
+
+print (matrix[209][205])
+
+with open('outfile.txt','wb') as f:
+    numpy.savetxt(f, matrix, fmt='%.5e')"""
