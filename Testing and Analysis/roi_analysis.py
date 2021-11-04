@@ -34,7 +34,7 @@ def arc_roi(dist_from_centre, column, centre_point):
             # Arc found!
 
     # finds the wedge in which the pixel lies
-    angle = math.acos(abs(centre_point[2]-column)/dist_from_centre)
+    angle = math.acos(math.radians(centre_point[2]-column)/dist_from_centre)
     for j in range(max_num_wedges):
         if angle < wedge[j]:
             selected_wedge = j
