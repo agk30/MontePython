@@ -10,8 +10,9 @@ num_wedges = 0
 xPx = 0
 yPx = 0
 
-max_num_rads = 0
+max_num_radii = 0
 max_num_wedges = 0
+max_radius = 0
 
 startTime = 0
 endTime = 0
@@ -22,13 +23,11 @@ num_timepoints = (endTime - startTime) / timeStep
 folder_path = ""
 
 image = numpy.zeros((xPx,yPx))
-radius = numpy.zeros((max_num_rads))
-wedge = numpy.zeros((max_num_wedges))
-outputArray = numpy.zeros((max_num_rads,max_num_wedges,2))
+outputArray = numpy.zeros((max_num_radii,max_num_wedges,2))
 
-def arc_roi(dist_from_centre, column, centre_point):
+def arc_roi(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges):
     # finds the arc in which the pixel lies
-    for i in range(max_num_rads):
+    for i in range(max_num_radii):
         if dist_from_centre < radius[i]:
             selected_arc = i
             # Arc found!
@@ -59,9 +58,22 @@ def generate_wedges(max_num_wedges):
     
     return angle
 
-def generate_radii(max_num):
+def generate_radii(max_num_radii, max_radius):
 
-    return
+    radius = []
+    radius_increment = max_radius/max_num_radii
+
+    for i in range(max_num_radii):
+        radius[i] = (i+1)*radius_increment
+
+    return radius
+
+radius = generate_radii(max_num_radii, max_radius)
+angle = generate_wedges(max_num_wedges)
+
+list = os.listdir(folder_path)
+number_files = len(list)
+print (number_files)
 
 # Loops over every file in folder
 for root, dirs, files in os.walk(folder_path):
@@ -81,8 +93,8 @@ for root, dirs, files in os.walk(folder_path):
             for column in range(yPx):
                 dist_from_centre = math.sqrt((row-centre_point[1])**2 + (column-centre_point[2])**2)
                 # Pixel must lie within the largest semi-circle to be processed
-                if dist_from_centre < radius[max_num_rads-1]:
-                    arc, wedge = arc_roi(row, column, centre_point)
+                if dist_from_centre < radius[max_num_radii-1]:
+                    arc, wedge = arc_roi(row, column, centre_point, max_num_radii, max_num_wedges)
                     outputArray[arc,wedge,1] = outputArray[arc,wedge,1] + image[row,column]
 
         # with open('Output Images/'+'sv_'+name+'.txt','wb') as f:
