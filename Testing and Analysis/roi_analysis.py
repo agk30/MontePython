@@ -26,7 +26,7 @@ radius = numpy.zeros((max_num_rads))
 wedge = numpy.zeros((max_num_wedges))
 outputArray = numpy.zeros((max_num_rads,max_num_wedges,2))
 
-def arc_roi(row, column, centre_point):
+def arc_roi(dist_from_centre, column, centre_point):
     # finds the arc in which the pixel lies
     for i in range(max_num_rads):
         if dist_from_centre < radius[i]:
@@ -41,6 +41,27 @@ def arc_roi(row, column, centre_point):
             # Wedge found!
 
     return selected_arc, selected_wedge
+
+# angles generated here are defined as the boundaries between wedges
+def generate_wedges(max_num_wedges):
+
+    angle = []
+    angle_increment = 180/max_num_wedges
+
+    # half angle allows for offset on even numbers of angles to allow the middle of a wedge to be centred at 0 degrees
+    if max_num_wedges%2 == 0:
+        angle_offset = angle_increment/2
+    else:
+        angle_offset = 0
+
+    for i in range(max_num_wedges):
+        angle[i] = (i*angle_increment) + angle_offset
+    
+    return angle
+
+def generate_radii(max_num):
+
+    return
 
 # Loops over every file in folder
 for root, dirs, files in os.walk(folder_path):

@@ -1,2 +1,4 @@
 /Testing and Analysis/Output Images/*
 test.py
+
+src/__pycache__/convolution.cpython-310.pyc
