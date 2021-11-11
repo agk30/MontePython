@@ -2,30 +2,7 @@ import numpy
 import math
 import os
 
-probe_height = 0
-centre_point = []
-num_arcs = 0
-num_wedges = 0
-
-xPx = 0
-yPx = 0
-
-max_num_radii = 0
-max_num_wedges = 0
-max_radius = 0
-
-startTime = 0
-endTime = 0
-timeStep = 0
-
-num_timepoints = (endTime - startTime) / timeStep
-
-folder_path = ""
-
-image = numpy.zeros((xPx,yPx))
-outputArray = numpy.zeros((max_num_radii,max_num_wedges,2))
-
-def arc_roi(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges):
+def arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges):
     # finds the arc in which the pixel lies
     for i in range(max_num_radii):
         if dist_from_centre < radius[i]:
@@ -40,6 +17,16 @@ def arc_roi(dist_from_centre, column, centre_point, max_num_radii, max_num_wedge
             # Wedge found!
 
     return selected_arc, selected_wedge
+
+def roi_assign(xPx, yPx, centre_point, radius, max_num_radii, max_num_wedges, outputArray):
+    for row in range(xPx):
+        for column in range(yPx):
+            dist_from_centre = math.sqrt((row-centre_point[1])**2 + (column-centre_point[2])**2)
+            # Pixel must lie within the largest semi-circle to be processed
+            if dist_from_centre < radius[max_num_radii-1]:
+                arc, wedge = arc_wedge(row, column, centre_point, max_num_radii, max_num_wedges)
+                outputArray[arc,wedge,1] = outputArray[arc,wedge,1] + image[row,column]
+    return outputArray
 
 # angles generated here are defined as the boundaries between wedges
 def generate_wedges(max_num_wedges):
@@ -68,12 +55,52 @@ def generate_radii(max_num_radii, max_radius):
 
     return radius
 
+def read_image(image_path):
+    with open(image_path, "r") as f:
+        i = 0
+        for line in f:
+            li=line.strip()
+            matrix_line = [float(i) for i in li.split("	")]
+            image[i][0:] = (matrix_line)
+            i = i+1
+    return image
+
+probe_height = 0
+centre_point = []
+num_arcs = 0
+num_wedges = 0
+
+xPx = 0
+yPx = 0
+
+max_num_radii = 0
+max_num_wedges = 0
+max_radius = 0
+
+startTime = 0
+endTime = 0
+timeStep = 0
+
+num_timepoints = (endTime - startTime) / timeStep
+
+folder_path = ""
+
+image = numpy.zeros((xPx,yPx))
+outputArray = numpy.zeros((max_num_radii,max_num_wedges,2))
+
 radius = generate_radii(max_num_radii, max_radius)
 angle = generate_wedges(max_num_wedges)
 
 list = os.listdir(folder_path)
+s_out_list = []
 number_files = len(list)
 print (number_files)
+
+# compiles list of surface out measurements
+for file in list:
+    for part in file.split("_"):
+        if part == "IB":
+            s_out_list.append(file)
 
 # Loops over every file in folder
 for root, dirs, files in os.walk(folder_path):
@@ -81,23 +108,8 @@ for root, dirs, files in os.walk(folder_path):
         file_path = root + "/" + name
         print (name)
         # For each file, data are read into the image matrix
-        with open(file_path, "r") as f:
-            i = 0
-            for line in f:
-                li=line.strip()
-                matrix_line = [float(i) for i in li.split("	")]
-                image[i][0:] = (matrix_line)
-                i = i+1
-        # For every pixel in image, the segment it belongs in is found
-        for row in range(xPx):
-            for column in range(yPx):
-                dist_from_centre = math.sqrt((row-centre_point[1])**2 + (column-centre_point[2])**2)
-                # Pixel must lie within the largest semi-circle to be processed
-                if dist_from_centre < radius[max_num_radii-1]:
-                    arc, wedge = arc_roi(row, column, centre_point, max_num_radii, max_num_wedges)
-                    outputArray[arc,wedge,1] = outputArray[arc,wedge,1] + image[row,column]
-
+        image = read_image(file_path)
+        # image goes to be processed, assigning the pixel intensity to the correct ROI
+        outputArray = roi_assign(xPx, yPx, centre_point, radius, max_num_radii, max_num_wedges, outputArray)
         # with open('Output Images/'+'sv_'+name+'.txt','wb') as f:
             #    numpy.savetxt(f, matrix, fmt='%.5e')
-
-
