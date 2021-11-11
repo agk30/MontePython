@@ -2,7 +2,7 @@ import numpy
 import math
 import os
 
-def arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges):
+def arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges, radius, wedge):
     # finds the arc in which the pixel lies
     for i in range(max_num_radii):
         if dist_from_centre < radius[i]:
@@ -18,13 +18,13 @@ def arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wed
 
     return selected_arc, selected_wedge
 
-def roi_assign(xPx, yPx, centre_point, radius, max_num_radii, max_num_wedges, outputArray):
+def roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wedges, outputArray):
     for row in range(xPx):
         for column in range(yPx):
             dist_from_centre = math.sqrt((row-centre_point[1])**2 + (column-centre_point[2])**2)
             # Pixel must lie within the largest semi-circle to be processed
             if dist_from_centre < radius[max_num_radii-1]:
-                arc, wedge = arc_wedge(row, column, centre_point, max_num_radii, max_num_wedges)
+                arc, wedge = arc_wedge(row, column, centre_point, max_num_radii, max_num_wedges, radius, wedge)
                 outputArray[arc,wedge,1] = outputArray[arc,wedge,1] + image[row,column]
     return outputArray
 
@@ -89,7 +89,7 @@ image = numpy.zeros((xPx,yPx))
 outputArray = numpy.zeros((max_num_radii,max_num_wedges,2))
 
 radius = generate_radii(max_num_radii, max_radius)
-angle = generate_wedges(max_num_wedges)
+wedge = generate_wedges(max_num_wedges)
 
 list = os.listdir(folder_path)
 s_out_list = []
@@ -110,6 +110,6 @@ for root, dirs, files in os.walk(folder_path):
         # For each file, data are read into the image matrix
         image = read_image(file_path)
         # image goes to be processed, assigning the pixel intensity to the correct ROI
-        outputArray = roi_assign(xPx, yPx, centre_point, radius, max_num_radii, max_num_wedges, outputArray)
+        outputArray = roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wedges, outputArray)
         # with open('Output Images/'+'sv_'+name+'.txt','wb') as f:
             #    numpy.savetxt(f, matrix, fmt='%.5e')
