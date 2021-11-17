@@ -2,34 +2,48 @@ import numpy
 import math
 import os
 import scipy.optimize
+import sys
 
 def arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges, radius, wedge):
     # finds the arc in which the pixel lies
+    #print (dist_from_centre)
     for i in range(max_num_radii):
         if dist_from_centre < radius[i]:
             selected_arc = i
             # Arc found!
+        elif (i == max_num_radii-1):
+            print("no arc found")
+            sys.exit()
 
     # finds the wedge in which the pixel lies
-    angle = math.acos(math.radians(centre_point[2]-column)/dist_from_centre)
+    angle = math.acos(math.radians(centre_point[1]-column)/dist_from_centre)
     for j in range(max_num_wedges):
         if angle < wedge[j]:
             selected_wedge = j
             # Wedge found!
+        elif (j == max_num_radii-1):
+            print ("no wedge found")
+            sys.exit()
 
     return selected_arc, selected_wedge
 
-def roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wedges, outputArray):
+def roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wedges, image):
+
+    working_array = numpy.zeros((max_num_radii, max_num_wedges))
 
     for row in range(xPx):
         for column in range(yPx):
-            dist_from_centre = math.sqrt((row-centre_point[1])**2 + (column-centre_point[2])**2)
+            dist_from_centre = math.sqrt((row-centre_point[0])**2 + (column-centre_point[1])**2)
+            
             # Pixel must lie within the largest semi-circle to be processed
-            if dist_from_centre < radius[max_num_radii-1]:
-                arc, wedge = arc_wedge(row, column, centre_point, max_num_radii, max_num_wedges, radius, wedge)
-                outputArray[arc][wedge] = outputArray[arc][wedge] + image[row][column]
+            if (dist_from_centre < radius[max_num_radii-1]) and (dist_from_centre != 0):
+                
+                #print (dist_from_centre, radius[max_num_radii-1])
+                selected_arc, selected_wedge = arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges, radius, wedge)
+                #outputArray[arc][wedge] = outputArray[arc][wedge] + image[row][column]
+                working_array[selected_arc][selected_wedge] = working_array[selected_arc][selected_wedge] + image[row][column]
 
-    return outputArray
+    return working_array
 
 # angles generated here are defined as the boundaries between wedges
 def generate_wedges(max_num_wedges):
@@ -44,7 +58,8 @@ def generate_wedges(max_num_wedges):
         angle_offset = 0
 
     for i in range(max_num_wedges):
-        angle[i] = (i*angle_increment) + angle_offset
+        angle.append((i*angle_increment) + angle_offset)
+        #angle[i] = (i*angle_increment) + angle_offset
     
     return angle
 
@@ -54,7 +69,8 @@ def generate_radii(max_num_radii, max_radius):
     radius_increment = max_radius/max_num_radii
 
     for i in range(max_num_radii):
-        radius[i] = (i+1)*radius_increment
+        radius.append((i+1)*radius_increment)
+        #radius[i] = (i+1)*radius_increment
 
     return radius
 
@@ -101,7 +117,7 @@ def residuals(x, sin, sout):
     resid = (sin*x) - sout
 
     return resid
-
+"""
 probe_height = 0
 centre_point = []
 num_arcs = 0
@@ -124,7 +140,7 @@ folder_path = ""
 timePoint = ""
 
 image = numpy.zeros((xPx,yPx))
-outputArray = numpy.zeros((max_num_radii,max_num_wedges,2))
+outputArray = numpy.zeros((max_num_radii,max_num_wedges,num_timepoints,2))
 
 radius = generate_radii(max_num_radii, max_radius)
 wedge = generate_wedges(max_num_wedges)
@@ -149,8 +165,6 @@ for root, dirs, files in os.walk(folder_path):
         image = read_image(file_path)
         # image goes to be processed, assigning the pixel intensity to the correct ROI
         outputArray[:][:][timePoint][1] = roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wedges, outputArray)
-        # with open('Output Images/'+'sv_'+name+'.txt','wb') as f:
-            #    numpy.savetxt(f, matrix, fmt='%.5e')
 
 # TOF generation and manipulation
 
@@ -166,3 +180,4 @@ fit = scipy.optimize.least_squares(residuals, 1)
 modifier = fit.x
 
 mod_sin = (sin*modifier) - sout
+"""
