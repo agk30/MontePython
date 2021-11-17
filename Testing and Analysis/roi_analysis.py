@@ -6,30 +6,30 @@ import sys
 
 def arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges, radius, wedge):
     # finds the arc in which the pixel lies
-    #print (dist_from_centre)
     for i in range(max_num_radii):
         if dist_from_centre < radius[i]:
+            #print ("here")
             selected_arc = i
-            # Arc found!
-        elif (i == max_num_radii-1):
-            print("no arc found")
-            sys.exit()
+            break
 
     # finds the wedge in which the pixel lies
-    angle = math.acos(math.radians(centre_point[1]-column)/dist_from_centre)
+    angle = math.degrees(math.acos((centre_point[1]-column)/dist_from_centre))
     for j in range(max_num_wedges):
         if angle < wedge[j]:
             selected_wedge = j
-            # Wedge found!
-        elif (j == max_num_radii-1):
-            print ("no wedge found")
-            sys.exit()
+            break
+        # if angle is beyond largest angle slice, needs to be collected in spillover
+        else:
+            selected_wedge = -1
+        # Wedge found!
+        #print (angle)
 
     return selected_arc, selected_wedge
 
 def roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wedges, image):
 
     working_array = numpy.zeros((max_num_radii, max_num_wedges))
+    spillover = 0
 
     for row in range(xPx):
         for column in range(yPx):
@@ -40,9 +40,13 @@ def roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wed
                 
                 #print (dist_from_centre, radius[max_num_radii-1])
                 selected_arc, selected_wedge = arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges, radius, wedge)
-                #outputArray[arc][wedge] = outputArray[arc][wedge] + image[row][column]
-                working_array[selected_arc][selected_wedge] = working_array[selected_arc][selected_wedge] + image[row][column]
+                if selected_wedge == -1:
+                    #spillover
+                    spillover = spillover + image[row][column]
+                else:
+                    working_array[selected_arc][selected_wedge] = working_array[selected_arc][selected_wedge] + image[row][column]
 
+                #print (working_array[selected_arc][selected_wedge], selected_arc, selected_wedge)
     return working_array
 
 # angles generated here are defined as the boundaries between wedges
