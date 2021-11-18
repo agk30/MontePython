@@ -138,6 +138,10 @@ startTime = 0
 endTime = 0
 timeStep = 0
 
+############################# IMPORTANT #################################
+matrix[:,:,0,0] = smaller_matrix
+######################### END OF IMPORTANT ##############################
+
 num_timepoints = (endTime - startTime) / timeStep
 
 folder_path = ""
