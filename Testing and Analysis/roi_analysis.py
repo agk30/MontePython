@@ -181,7 +181,7 @@ timeStep = 1
 
 num_timepoints = int((endTime - startTime) / timeStep)
 
-folder_path = "K:/Scattering Images/2021-11-24_100741/Blurred Images"
+folder_path = "K:/Scattering Images/2021-11-24_152758/Blurred Images"
 #timePoint = ""
 
 image = numpy.zeros((xPx,yPx))
@@ -230,9 +230,11 @@ file_header = ','.join(str(wedge))
 
 for i in range(max_num_radii):
     for j in range(max_num_wedges):
-        for k in range(num_timepoints):
-            with open('Output Images/'+'wedge'+str(j+1)+'/'+timepoint_list[k]+'.csv','wb') as f:
-                numpy.savetxt(f, outputArray[3,j,:,1], fmt='%.5e', delimiter=',',header='start='+str(startTime)+', end='+str(endTime))
+        #for k in range(num_timepoints):
+            with open('Output Images/'+'wedge'+str(j+1)+'/'+str(i+1)+'.csv','wb') as f:
+                numpy.savetxt(f, outputArray[i,j,:,1], fmt='%.5e', delimiter=',',header='start='+str(startTime)+', end='+str(endTime))
+
+print (radius)
 
 """
 selected_wedge = 0
