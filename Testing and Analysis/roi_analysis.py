@@ -34,6 +34,8 @@ def roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wed
     for row in range(xPx):
         for column in range(yPx):
             dist_from_centre = math.sqrt((row-centre_point[0])**2 + (column-centre_point[1])**2)
+
+            #print (dist_from_centre, radius[max_num_radii-1])
             
             # Pixel must lie within the largest semi-circle to be processed
             if (dist_from_centre < radius[max_num_radii-1]) and (dist_from_centre != 0):
@@ -42,9 +44,10 @@ def roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wed
                 selected_arc, selected_wedge = arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges, radius, wedge)
                 if selected_wedge == -1:
                     #spillover
-                    spillover = spillover + image[row][column]
+                    spillover = spillover + image[row,column]
                 else:
-                    working_array[selected_arc][selected_wedge] = working_array[selected_arc][selected_wedge] + image[row][column]
+                    #print (selected_arc,selected_wedge,row,column)
+                    working_array[selected_arc,selected_wedge] = working_array[selected_arc,selected_wedge] + image[row,column]
 
                 #print (working_array[selected_arc][selected_wedge], selected_arc, selected_wedge)
     return working_array
@@ -75,17 +78,24 @@ def generate_radii(max_num_radii, max_radius):
     for i in range(max_num_radii):
         radius.append((i+1)*radius_increment)
         #radius[i] = (i+1)*radius_increment
+    
+    print (radius)
 
     return radius
 
 def read_image(image_path):
 
     illegal_characters = ['','\n']
-    print (illegal_characters)
 
     with open(image_path, "r") as f:
         i = 0
-        image = []
+
+        image = numpy.loadtxt(f)
+        #print (image)
+
+        #image = [[float(num) for num in line.split('  ')] for line in f]
+
+        """
         working_line = []
         for line in f:
             #li=line.strip()
@@ -96,9 +106,11 @@ def read_image(image_path):
                     working_line.append(element)
             #matrix_line = [float(i) for i in li.split(" ")]
             matrix_line = [float(i) for i in working_line]
-            #image[i][0:] = (matrix_line)
-            image.append(working_line)
+            print (len(matrix_line))
+            #image[i,:] = (matrix_line)
+            #image.append(matrix_line)
             i = i+1
+            """
 
     return image
 
@@ -140,9 +152,7 @@ def simple_split(file_path):
         if name.isnumeric():
             delay =  name
             return delay
-        else:
-            print ("meme")
-    print(name_list)
+
 def residuals(x, sin, sout):
 
     resid = (sin*x) - sout
@@ -159,7 +169,7 @@ yPx = 420
 
 max_num_radii = 7
 max_num_wedges = 14
-max_radius = 0
+max_radius = 158
 
 startTime = 56
 endTime = 160
@@ -171,11 +181,11 @@ timeStep = 1
 
 num_timepoints = int((endTime - startTime) / timeStep)
 
-folder_path = "/mnt/c/Users/adam/Documents/Code/Scattering Images/2021-11-24_100741/Blurred Images"
+folder_path = "K:/Scattering Images/2021-11-24_100741/Blurred Images"
 #timePoint = ""
 
 image = numpy.zeros((xPx,yPx))
-outputArray = numpy.zeros((max_num_radii,max_num_wedges,num_timepoints,2))
+outputArray = numpy.zeros((max_num_radii,max_num_wedges,endTime-startTime+1,2))
 
 radius = generate_radii(max_num_radii, max_radius)
 wedge = generate_wedges(max_num_wedges)
@@ -191,23 +201,38 @@ for file in list:
         if part == "IB":
             s_out_list.append(file)
 
+timepoint_list = []
+
 # Loops over every file in folder
 for root, dirs, files in os.walk(folder_path):
     for name in files:
         file_path = root + "/" + name
         #surface, delay, transition = parse_file_name(file_path)
         delay = simple_split(file_path)
-
-        print (name)
-        # For each file, data are read into the image matrix
-        image = read_image(file_path)
-        # image goes to be processed, assigning the pixel intensity to the correct ROI
-        print (delay, startTime)
-        outputArray[:][:][int(delay)-startTime][1] = roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wedges, outputArray)
+        if (int(delay) <= endTime) and (int(delay) >= startTime):
+            timepoint_list.append(delay)
+            print (name)
+            # For each file, data are read into the image matrix
+            image = read_image(file_path)
+            # image goes to be processed, assigning the pixel intensity to the correct ROI
+            outputArray[:,:,int(delay)-startTime,1] = roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wedges, image)
 
 # TOF generation and manipulation
+if not os.path.isdir('Output Images'):
+    os.mkdir('Output Images')
 
-print(outputArray[:][:][100][1])
+for i in range(max_num_radii):
+    for j in range(max_num_wedges):
+        if not os.path.isdir('Output Images/'+'/wedge'+str(j+1)):
+            os.mkdir('Output Images/'+'wedge'+str(j+1))
+
+file_header = ','.join(str(wedge))
+
+for i in range(max_num_radii):
+    for j in range(max_num_wedges):
+        for k in range(num_timepoints):
+            with open('Output Images/'+'wedge'+str(j+1)+'/'+timepoint_list[k]+'.csv','wb') as f:
+                numpy.savetxt(f, outputArray[3,j,:,1], fmt='%.5e', delimiter=',',header='start='+str(startTime)+', end='+str(endTime))
 
 """
 selected_wedge = 0
