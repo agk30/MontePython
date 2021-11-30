@@ -46,7 +46,7 @@ def roi_assign(xPx, yPx, centre_point, radius, wedge, max_num_radii, max_num_wed
 # angles generated here are defined as the boundaries between wedges
 def generate_wedges(max_num_wedges):
 
-    angle = []
+    angle = numpy.zeros(max_num_wedges)
     angle_increment = 180/max_num_wedges
 
     # half angle allows for offset on even numbers of angles to allow the middle of a wedge to be centred at 0 degrees
@@ -56,19 +56,17 @@ def generate_wedges(max_num_wedges):
         angle_offset = 0
 
     for i in range(max_num_wedges):
-        angle.append((i*angle_increment) + angle_offset)
+        angle[i] = ((i*angle_increment) + angle_offset)
     
     return angle
 
 def generate_radii(max_num_radii, max_radius):
 
-    radius = []
+    radius = numpy.zeros((max_num_radii))
     radius_increment = max_radius/max_num_radii
 
     for i in range(max_num_radii):
-        radius.append((i+1)*radius_increment)
-    
-    print (radius)
+        radius[i] = ((i+1)*radius_increment)
 
     return radius
 
