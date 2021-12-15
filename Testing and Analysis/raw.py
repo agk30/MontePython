@@ -17,8 +17,8 @@ yPx = 420
 max_radius = 158
 
 startTime = 50
-endTime = 250
-timeStep = 2
+endTime = 150
+timeStep = 1
 
 output_directory = "Output Data"
 
@@ -28,8 +28,9 @@ else:
     shutil.rmtree(output_directory)
     os.mkdir(output_directory)
 
-num_timepoints = int((endTime - startTime) / timeStep)
+num_timepoints = int((endTime - startTime) / timeStep) + 1
 half_wedge_step = 90/num_wedges
+half_arc_step = (max_radius/num_arcs)/2
 
 image = numpy.zeros((xPx,yPx))
 outputArray = numpy.zeros((num_arcs,num_wedges,endTime-startTime+1,2))
@@ -68,12 +69,33 @@ for root, dirs, files in os.walk(folder_path):
             # image goes to be processed, assigning the pixel intensity to the correct ROI
             outputArray[:,:,int((int(delay)-startTime)/timeStep),1] = roi.roi_assign(xPx, yPx, centre_point, radius, wedge, num_arcs, num_wedges, image)
 
+comment = str(radius)
+
+delay_list = numpy.zeros((num_timepoints,1))
+
+for i in range(num_timepoints):
+    delay_list[i] = (startTime + i*timeStep)*1E-6
+
+for j in range(num_wedges):
+    with open(output_directory+'/wedge '+str(round(wedge[j]-90-half_wedge_step,2))+'.csv','wb') as f:
+        write_array = outputArray[:,j,:,1]
+        write_array = numpy.swapaxes(write_array, 0, 1)
+        normalised_array = write_array.copy()
+        for i in range(num_arcs):
+            max_value = max(write_array[:,i])
+            normalised_array[:,i] = normalised_array[:,i]/max_value
+        write_array = numpy.hstack((delay_list,write_array))
+        write_array = numpy.hstack((write_array,normalised_array))
+        numpy.savetxt(f, write_array, fmt='%.5e', delimiter=',', header=comment)
+
+"""
 for i in range(num_arcs):
     for j in range(num_wedges):
         #for k in range(num_timepoints):
-            with open(output_directory+'/wedge '+str(round(wedge[j]-90-half_wedge_step,2))+'/arc '+str(round(radius[i],2))+'.csv','wb') as f:
+            with open(output_directory+'/wedge '+str(round(wedge[j]-90-half_wedge_step,2))+'/arc '+str(round(radius[i]-half_arc_step,2))+'.csv','wb') as f:
                 comment = 'start='+str(startTime)+', end='+str(endTime)+', radii='+str(radius)+', angles='+str(wedge)
                 numpy.savetxt(f, outputArray[i,j,:,1], fmt='%.5e', delimiter=',')
+"""
 
 wedge = numpy.array(wedge)
 radius = numpy.array(radius)
