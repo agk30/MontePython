@@ -2,38 +2,45 @@ import roi
 import numpy
 import os
 import sys
+import shutil
 
 folder_path = roi.get_args(sys.argv[1:])
 
 probe_height = 0
 centre_point = [294, 210]
-num_arcs = 14
-num_wedges = 14
+num_arcs = 7
+num_wedges = 12
 
 xPx = 420
 yPx = 420
 
 max_radius = 158
 
-startTime = 100
-endTime = 200
-timeStep = 1
+startTime = 50
+endTime = 250
+timeStep = 2
 
-if not os.path.isdir('Output Images'):
-    os.mkdir('Output Images')
+output_directory = "Output Data"
 
-for i in range(num_arcs):
-    for j in range(num_wedges):
-        if not os.path.isdir('Output Images/'+'/wedge '+str(j+1)):
-            os.mkdir('Output Images/'+'wedge '+str(j+1))
+if not os.path.isdir(output_directory):
+    os.mkdir(output_directory)
+else:
+    shutil.rmtree(output_directory)
+    os.mkdir(output_directory)
 
 num_timepoints = int((endTime - startTime) / timeStep)
+half_wedge_step = 90/num_wedges
 
 image = numpy.zeros((xPx,yPx))
 outputArray = numpy.zeros((num_arcs,num_wedges,endTime-startTime+1,2))
 
 radius = roi.generate_radii(num_arcs, max_radius)
 wedge = roi.generate_wedges(num_wedges)
+
+for i in range(num_arcs):
+    for j in range(num_wedges):
+        if not os.path.isdir(output_directory+'/'+'/wedge '+str(round(wedge[j]-90-half_wedge_step,2))):
+            os.mkdir(output_directory+'/'+'wedge '+str(round(wedge[j]-90-half_wedge_step,2)))
 
 list = os.listdir(folder_path)
 s_out_list = []
@@ -59,18 +66,14 @@ for root, dirs, files in os.walk(folder_path):
             # For each file, data are read into the image matrix
             image = roi.read_image(file_path)
             # image goes to be processed, assigning the pixel intensity to the correct ROI
-            outputArray[:,:,int(delay)-startTime,1] = roi.roi_assign(xPx, yPx, centre_point, radius, wedge, num_arcs, num_wedges, image)
+            outputArray[:,:,int((int(delay)-startTime)/timeStep),1] = roi.roi_assign(xPx, yPx, centre_point, radius, wedge, num_arcs, num_wedges, image)
 
 for i in range(num_arcs):
     for j in range(num_wedges):
         #for k in range(num_timepoints):
-            with open('Output Images/'+'wedge '+str(j+1)+'/arc '+str(i+1)+'.csv','wb') as f:
+            with open(output_directory+'/wedge '+str(round(wedge[j]-90-half_wedge_step,2))+'/arc '+str(round(radius[i],2))+'.csv','wb') as f:
                 comment = 'start='+str(startTime)+', end='+str(endTime)+', radii='+str(radius)+', angles='+str(wedge)
                 numpy.savetxt(f, outputArray[i,j,:,1], fmt='%.5e', delimiter=',')
-
-#parameter_array = numpy.zeros((num_wedges,2))
-#parameter_array[:,0] = wedge
-#parameter_array[:,1] = radius
 
 wedge = numpy.array(wedge)
 radius = numpy.array(radius)
@@ -89,7 +92,7 @@ array = numpy.zeros((largest,2))
 array[:,0] = radius
 array[:,1] = wedge
 
-with open('Output Images/parameters.txt','wb') as f:
+with open(output_directory+'/parameters.txt','wb') as f:
     header_str = 'start time = '+str(startTime)+', end time = '+str(endTime)+', num radii = '+str(num_arcs)+', num angles = '+str(num_wedges)
     numpy.savetxt(f, array , fmt='%s', delimiter=',',header=header_str)
 print ('')
