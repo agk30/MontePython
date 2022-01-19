@@ -155,3 +155,43 @@ def soft_sphere_speed(mass, internal_loss_ratio, surface_mass, initial_speed, de
     final_speed = math.sqrt(2*final_energy/mass)
 
     return final_speed
+
+def multi_gauss_speed(gauss_mean_array, gauss_sigma_array, gauss_weight_array, dist, time_offset):
+
+    m_size = gauss_mean_array.size
+    s_size = gauss_sigma_array.size
+    w_size = gauss_weight_array.size
+
+    # Checks that all parameter arrays are the same size
+    if (m_size != s_size) or (m_size != w_size):
+        print ("Error: Gauss parameter arrays must contain the same number of elements in each array")
+    
+    # Number of gaussians inferred from size of arrays. This can screw up if the arrays are not one dimensional, check this later.
+    n_gaussians = m_size
+
+    rand = random.random()
+
+    # Arrival time is chosen from probability of the sum of the gaussians chosen. If random number is not chosen from the range of 0 to limit of first weighting,
+    # it is then tries the range of the first weighting to the second weighting, then from the second to third if it is not successful etc. Weighting must sum to
+    # unity for this to work.
+    w_upper = 0
+    w_lower = 0
+    for i in range(n_gaussians):
+        w_upper = w_upper + gauss_weight_array(i)
+
+        if (rand > w_lower) and (rand < w_upper):
+            arrival_time = random.normal(gauss_mean_array(i), gauss_sigma_array(i))
+        
+        w_lower =  w_lower + gauss_weight_array(i)
+
+    arrival_time = arrival_time - time_offset
+    speed = dist/(arrival_time*1E-6)
+
+    return speed
+
+def time_of_creation(pulse_length):
+
+    rand = random.random()
+    t0 = (pulse_length*rand) - (pulse_length/2)
+
+    return t0

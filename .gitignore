@@ -8,3 +8,5 @@ src/__pycache__/convolution.cpython-310.pyc
 Testing and Analysis/output.txt
 
 Testing and Analysis/test2.py
+
+*.csv
