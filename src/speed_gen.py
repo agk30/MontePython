@@ -122,3 +122,36 @@ def transverse_speed(mean, sigma, gamma, l_g_fraction, zPos, travelDistance, sta
     vector = vector/numpy.linalg.norm(vector)
 
     return vector
+
+def random_speed(low, high):
+
+    rand = random.random()
+    speed = ((high-low)*rand) + low
+
+    return speed
+
+def soft_sphere_speed(mass, internal_loss_ratio, surface_mass, initial_speed, deflection_angle):
+
+    pi = scipy.constants.pi
+
+    mass_ratio = mass/surface_mass*1000
+    initial_energy = 0.5*mass*initial_speed*initial_speed
+    deflection_angle = deflection_angle*((2*pi)/360)
+
+    part1 = (2*mass_ratio)/((1+mass_ratio)**2)
+
+    part2 = 1 + (mass_ratio*(math.sin(deflection_angle)**2))
+
+    part3 = math.cos(deflection_angle)
+
+    part4 = math.sqrt(1 - (mass_ratio*mass_ratio(math.sin(deflection_angle)**2)) - internal_loss_ratio*(mass_ratio + 1))
+
+    part5 = internal_loss_ratio*((mass_ratio + 1)/(2*mass_ratio))
+
+    energy_diff = part1*(part2 - (part3*part4) + part5)*initial_energy
+
+    final_energy = initial_energy - energy_diff
+
+    final_speed = math.sqrt(2*final_energy/mass)
+
+    return final_speed
