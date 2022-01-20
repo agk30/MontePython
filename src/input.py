@@ -1,8 +1,9 @@
 import configparser
-config = configparser.ConfigParser()
 
-config.read("../inputs.cfg")
+def load_inputs():
+    
+    config = configparser.ConfigParser()
 
-experimental = config["Experimental"]["parameter1"]
+    config.read("../inputs.cfg")
 
-print (experimental)
+    return config

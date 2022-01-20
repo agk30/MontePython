@@ -66,3 +66,22 @@ def unit_vector(mx, my):
     v[3] = -1/magnitude
 
     return v
+
+def cosine_distribution(cosine_power):
+
+    scatter_direction = numpy.zeros(3)
+
+    rand1 = random.random()
+    rand2 = random.random()
+
+    phi = rand1*2*scipy.constants.pi
+
+    x = rand2**(1/(cos_power+1))
+
+    theta = scipy.acos(x)
+
+    scatter_direction[0] = scipy.sin(theta)*scipy.cos(phi)
+    scatter_direction[1] = scipy.sin(theta)*scipy.sin(phi)
+    scatter_direction[2] = scipy.cos(theta)
+
+    return scatter_direction
