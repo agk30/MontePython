@@ -76,7 +76,7 @@ def cosine_distribution(cosine_power):
 
     phi = rand1*2*scipy.constants.pi
 
-    x = rand2**(1/(cos_power+1))
+    x = rand2**(1/(cosine_power+1))
 
     theta = scipy.acos(x)
 

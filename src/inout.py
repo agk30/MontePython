@@ -7,3 +7,5 @@ def load_inputs():
     config.read("../inputs.cfg")
 
     return config
+
+# ASSIGN THE INPUTS TO PROPER VALUES HERE, HOW DID YOU NOT THINK OF THIS BEFORE

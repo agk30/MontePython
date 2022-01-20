@@ -1,5 +1,13 @@
-import beam_gen
+import inout
+import molecule
 
-x,y = beam_gen.disc_pick()
+inputs = inout.load_inputs()
 
-print(x,y)
+floats_list = []
+
+for item in inputs['math parameters']['gaussMeans'].split():
+    floats_list.append(float(item))
+
+inputs['math parameters']['gaussMeans'] = floats_list
+
+#mol = molecule.Molecule(1, 1, inputs)

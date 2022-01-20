@@ -158,9 +158,9 @@ def soft_sphere_speed(mass, internal_loss_ratio, surface_mass, initial_speed, de
 
 def multi_gauss_speed(gauss_mean_array, gauss_sigma_array, gauss_weight_array, dist, time_offset):
 
-    m_size = gauss_mean_array.size
-    s_size = gauss_sigma_array.size
-    w_size = gauss_weight_array.size
+    m_size = len(gauss_mean_array)
+    s_size = len(gauss_sigma_array)
+    w_size = len(gauss_weight_array)
 
     # Checks that all parameter arrays are the same size
     if (m_size != s_size) or (m_size != w_size):
@@ -177,12 +177,12 @@ def multi_gauss_speed(gauss_mean_array, gauss_sigma_array, gauss_weight_array, d
     w_upper = 0
     w_lower = 0
     for i in range(n_gaussians):
-        w_upper = w_upper + gauss_weight_array(i)
+        w_upper = w_upper + gauss_weight_array[i]
 
         if (rand > w_lower) and (rand < w_upper):
-            arrival_time = random.normal(gauss_mean_array(i), gauss_sigma_array(i))
+            arrival_time = random.normal(gauss_mean_array[i], gauss_sigma_array[i])
         
-        w_lower =  w_lower + gauss_weight_array(i)
+        w_lower =  w_lower + gauss_weight_array[i]
 
     arrival_time = arrival_time - time_offset
     speed = dist/(arrival_time*1E-6)
