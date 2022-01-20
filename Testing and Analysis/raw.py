@@ -16,8 +16,8 @@ yPx = 420
 
 max_radius = 130
 
-startTime = 98
-endTime = 208
+startTime = 38
+endTime = 148
 timeStep = 2
 
 output_directory = "Output Data"
