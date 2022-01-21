@@ -1,6 +1,6 @@
 import speed_gen
-import inout
+import Inputs
 
-inputs = inout.Inputs()
+inputs = Inputs.Inputs()
 
 print (inputs.dist)

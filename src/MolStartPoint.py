@@ -1,5 +1,6 @@
 import numpy
 import direction_gen
+import Inputs
 
 class StartPoint:
     def __init__(self, inputs):
@@ -7,6 +8,6 @@ class StartPoint:
         start_point = numpy.zeros(3)
 
         start_point[0], start_point[1] = direction_gen.value()
-        start_point = start_point*float(inputs['experimental']['valveRad'])
-        start_point[2] = float(inputs['experimental']['valvePos'])
+        start_point = start_point*Inputs.valveRad
+        start_point[2] = Inputs.valvePos
         self.value = start_point
