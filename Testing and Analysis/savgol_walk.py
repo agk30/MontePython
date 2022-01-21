@@ -4,7 +4,7 @@ import numpy
 
 sys.path.insert(1, 'C:/Users/adam/Documents/Code/MontePython/src')
 
-import convolution
+import convolution as convolution
 
 folder_path = "E:/270921/Q13IB/Q13IB"
 
