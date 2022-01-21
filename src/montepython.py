@@ -1,6 +1,11 @@
 import speed_gen
-import Inputs
+import InputLoad
+import CreateMol
 
-inputs = Inputs.Inputs()
+inputs = InputLoad.LoadInputs()
 
-print (inputs.dist)
+#print (inputs.colRad)
+
+mol = CreateMol.Molecule(inputs,1,1)
+
+print (mol.direction.value)

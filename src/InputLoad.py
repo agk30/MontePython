@@ -1,6 +1,7 @@
 import configparser
+import math
 
-class Inputs:
+class LoadInputs:
     def __init__(self):
         
         inputs = configparser.ConfigParser()
@@ -38,7 +39,7 @@ class Inputs:
         #Iputs for mathematical calculations
         self.xPx = int(inputs['math parameters']['xPx'])
         self.zPx = int(inputs['math parameters']['zPx'])
-        self.incidenceAngle = int(inputs['math parameters']['incidenceAngle'])
+        self.incidenceAngle = math.radians(int(inputs['math parameters']['incidenceAngle']))
         self.cosinePowerTD = int(inputs['math parameters']['cosinePowerTD'])
         self.cosinePowerIS = int(inputs['math parameters']['cosinePowerIS'])
         self.x0 = float(inputs['math parameters']['x0'])
@@ -51,7 +52,7 @@ class Inputs:
         self.massMol = float(inputs['math parameters']['massMol'])
         self.energyLoss = float(inputs['math parameters']['energyLoss'])
         self.surfaceMass = float(inputs['math parameters']['surfaceMass'])
-        self.exitAngle = float(inputs['math parameters']['exitAngle'])
+        self.exitAngle = math.radians(float(inputs['math parameters']['exitAngle']))
         self.temp = float(inputs['math parameters']['temp'])
         self.ncyc = int(inputs['math parameters']['ncyc'])
         self.maxSpeed = float(inputs['math parameters']['maxSpeed'])
