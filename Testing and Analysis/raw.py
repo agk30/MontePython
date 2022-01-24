@@ -20,6 +20,8 @@ startTime = 68
 endTime = 178
 timeStep = 2
 
+delimiter = "Ch"
+
 output_directory = "Output Data"
 
 if not os.path.isdir(output_directory):
@@ -37,19 +39,15 @@ outputArray = numpy.zeros((num_arcs,num_wedges,int((endTime-startTime)/timeStep)
 
 radius = roi.generate_radii(num_arcs, max_radius)
 wedge = roi.generate_wedges(num_wedges)
-"""
-for i in range(num_arcs):
-    for j in range(num_wedges):
-        if not os.path.isdir(output_directory+'/'+'/wedge '+str(round(wedge[j]-90-half_wedge_step,2))):
-            os.mkdir(output_directory+'/'+'wedge '+str(round(wedge[j]-90-half_wedge_step,2)))
-"""
+
 list = os.listdir(folder_path)
 s_out_list = []
 number_files = len(list)
 print ('Total number of files = '+str(number_files)+', starting from '+str(startTime)+', ending at '+str(endTime))
 # compiles list of surface out measurements
 for file in list:
-    for part in file.split("_"):
+    #for part in file.split("_"):
+    for part in file.split("Ch"):
         if part == "IB":
             s_out_list.append(file)
 
@@ -62,7 +60,7 @@ for root, dirs, files in os.walk(folder_path):
     for name in files:
         file_path = root + "/" + name
         #surface, delay, transition = parse_file_name(file_path)
-        delay = int(roi.simple_split(file_path))
+        delay = int(roi.simple_split(file_path, delimiter))
         if (int(delay) <= endTime) and (int(delay) >= startTime):
             if (int(delay) - previous_value) == timeStep:
                 timepoint_list.append(delay)
@@ -94,15 +92,6 @@ for j in range(num_wedges):
         write_array = numpy.hstack((write_array,normalised_array))
         numpy.savetxt(f, write_array, fmt='%.5e', delimiter=',', header=comment)
 
-"""
-for i in range(num_arcs):
-    for j in range(num_wedges):
-        #for k in range(num_timepoints):
-            with open(output_directory+'/wedge '+str(round(wedge[j]-90-half_wedge_step,2))+'/arc '+str(round(radius[i]-half_arc_step,2))+'.csv','wb') as f:
-                comment = 'start='+str(startTime)+', end='+str(endTime)+', radii='+str(radius)+', angles='+str(wedge)
-                numpy.savetxt(f, outputArray[i,j,:,1], fmt='%.5e', delimiter=',')
-"""
-
 wedge = numpy.array(wedge)
 radius = numpy.array(radius)
 
@@ -126,18 +115,3 @@ with open(output_directory+'/parameters.txt','wb') as f:
 print ('')
 print ('Done',end='\r')
 print ('')
-
-"""
-selected_wedge = 0
-sample_range_start = 0
-sample_range_end = 5
-
-sin = []
-sout = []
-
-fit = scipy.optimize.least_squares(residuals, 1)
-
-modifier = fit.x
-
-mod_sin = (sin*modifier) - sout
-"""

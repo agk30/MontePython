@@ -2,6 +2,7 @@ import numpy
 import math
 import sys
 import getopt
+import os
 
 def arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges, radius, wedge):
     # finds the arc in which the pixel lies
@@ -80,8 +81,10 @@ def read_image(image_path):
 def parse_file_name(file_path):
 
     name_list = file_path.split("_")
-    surface_list = ["SQA","SQE","IB","PFPE"]
+    surface_list = ["SQA","SQE","IB","PFPE","OA","Bkg","InstrumFunc"]
     transition_list = ["Q11","Q12","Q13","Q14","Q15"]
+
+    junk = []
 
     for name in name_list:
         if name in surface_list:
@@ -90,28 +93,26 @@ def parse_file_name(file_path):
             delay = name
         elif name in transition_list:
             transition = name
+        else:
+            junk.append(name)
     
     if 'surface' not in locals():
-        print ("No surface name found")
-        return
+        surface = -1
 
     if 'delay' not in locals():
-        print ("No delay found in image name")
-        return
+        delay = -1
 
     if 'transition' not in locals():
-        print ("No transition found in image name")
-        return
+        transition = -1
 
     return surface, delay, transition
 
-def simple_split(file_path):
+def simple_split(file_path, delimiter):
 
-    file_path = file_path.split(".")
-    name_list = file_path[0].split("_")
+    #file_path = file_path.split(".")
+    name_list = file_path.split(delimiter)
 
     for name in name_list:
-
         if name.isnumeric():
             delay =  name
             return delay
@@ -144,3 +145,40 @@ def get_args(argv):
             path = arg
 
     return path
+
+def sum_tofs(folder_path):
+
+    surface_list = ["SQA","SQE","IB","PFPE","OA"]
+    transition_list = ["Q11","Q12","Q13","Q14","Q15"]
+    
+    delay_list = []
+
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            part_list = file.split("ChC")
+            for part in part_list:
+                if part.isnumeric():
+                    delay = part
+                    if not delay in delay_list:
+                        delay_list.append(delay)
+
+    delay_list.sort()
+ 
+    summed_images = numpy.zeros((677,630,5,5,len(delay_list)))
+
+    for root, dirs, files in os.walk(folder_path):
+        #print (root)
+        for name in root.split():
+            #print (name)
+            surface, delay, transition = parse_file_name(name)
+
+            if (surface != -1) and (transition != -1):
+                surface_index = surface_list.index(surface)
+                transition_index = transition_list.index(transition)
+
+                for file in os.listdir(root):
+                    image = read_image(root+"/"+file)
+                    delay = simple_split(file, "ChC")
+                    summed_images[:,:,surface_index,transition_index,delay_list.index(delay)] = summed_images[:,:,surface_index,transition_index,delay_list.index(delay)] + image
+
+    return summed_images, delay_list
