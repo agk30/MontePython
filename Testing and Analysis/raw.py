@@ -3,11 +3,12 @@ import numpy
 import os
 import sys
 import shutil
+import tkinter
 
 folder_path = roi.get_args(sys.argv[1:])
 
 probe_height = 0
-centre_point = [294, 210]
+centre_point = [283, 210]
 num_arcs = 7
 num_wedges = 12
 
@@ -16,11 +17,11 @@ yPx = 420
 
 max_radius = 130
 
-startTime = 68
-endTime = 178
+startTime = 38
+endTime = 148
 timeStep = 2
 
-delimiter = "Ch"
+delimiter = "ChC"
 
 output_directory = "Output Data"
 
@@ -43,7 +44,8 @@ wedge = roi.generate_wedges(num_wedges)
 list = os.listdir(folder_path)
 s_out_list = []
 number_files = len(list)
-print ('Total number of files = '+str(number_files)+', starting from '+str(startTime)+', ending at '+str(endTime))
+print ('Total number of files = '+str(num_timepoints)+', starting from '+str(startTime)+', ending at '+str(endTime))
+
 # compiles list of surface out measurements
 for file in list:
     #for part in file.split("_"):

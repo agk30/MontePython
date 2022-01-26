@@ -109,8 +109,9 @@ def parse_file_name(file_path):
 
 def simple_split(file_path, delimiter):
 
-    #file_path = file_path.split(".")
-    name_list = file_path.split(delimiter)
+    file_path = file_path.split(".")
+    stem = file_path[0]
+    name_list = stem.split(delimiter)
 
     for name in name_list:
         if name.isnumeric():
