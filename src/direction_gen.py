@@ -49,7 +49,7 @@ def disc_pick():
 
     return x, y
 
-def fit_line(y1, y2, x1, x2):
+def fit_line(y2, x2, y1, x1):
 
     m = (y2-y1)/(x2-x1)
     c = y2 - (m*x2)

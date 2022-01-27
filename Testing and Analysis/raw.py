@@ -7,8 +7,12 @@ import tkinter
 
 folder_path = roi.get_args(sys.argv[1:])
 
-probe_height = 0
-centre_point = [283, 210]
+######################################################
+# Input Paramters
+######################################################
+
+centre_point = [294, 210]
+#centre_point = [283, 210]
 num_arcs = 7
 num_wedges = 12
 
@@ -17,13 +21,20 @@ yPx = 420
 
 max_radius = 130
 
-startTime = 38
-endTime = 148
+startTime = 68
+endTime = 178
 timeStep = 2
 
-delimiter = "ChC"
+delimiter = "_"
 
 output_directory = "Output Data"
+
+include_bg = False
+bg_image_path = r"C:\Users\adam\Documents\Valve Distance Variation Experiment\80mm Back\05072021_1_Q11_IB_TOF Profile\05072021_1_Q11_IB_TOF Profile_ChC098"
+
+######################################################
+# End of Inputs
+######################################################
 
 if not os.path.isdir(output_directory):
     os.mkdir(output_directory)
@@ -36,6 +47,7 @@ half_wedge_step = 90/num_wedges
 half_arc_step = (max_radius/num_arcs)/2
 
 image = numpy.zeros((xPx,yPx))
+bg_image = numpy.zeros((xPx,yPx))
 outputArray = numpy.zeros((num_arcs,num_wedges,int((endTime-startTime)/timeStep)+1,2))
 
 radius = roi.generate_radii(num_arcs, max_radius)
@@ -58,6 +70,10 @@ timepoint_list = []
 #hacky way of making sure only images that fit the correct timestep are sampled
 previous_value = startTime - timeStep
 # Loops over every file in folder
+
+if include_bg:
+    bg_image = roi.read_image(bg_image_path)
+
 for root, dirs, files in os.walk(folder_path):
     for name in files:
         file_path = root + "/" + name
@@ -69,6 +85,7 @@ for root, dirs, files in os.walk(folder_path):
                 print ('Processing '+name,end='\r')
                 # For each file, data are read into the image matrix
                 image = roi.read_image(file_path)
+                image = image - bg_image
                 # image goes to be processed, assigning the pixel intensity to the correct ROI
                 outputArray[:,:,int((int(delay)-startTime)/timeStep),1] = roi.roi_assign(xPx, yPx, centre_point, radius, wedge, num_arcs, num_wedges, image)
                 previous_value = delay
@@ -86,7 +103,11 @@ for j in range(num_wedges):
         normalised_array = write_array.copy()
         for i in range(num_arcs):
             max_value = max(write_array[:,i])
-            normalised_array[:,i] = normalised_array[:,i]/max_value
+            if max_value > 0:
+                normalised_array[:,i] = normalised_array[:,i]/max_value
+            else:
+                print ("Exiting: Image wasn't properly read, possible cause is the choice of delimiter for extracting delay from image.")
+                sys.exit()
         
         #print (delay_list)
         #print (write_array)
