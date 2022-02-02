@@ -147,7 +147,7 @@ def get_args(argv):
 
     return path
 
-def sum_tofs(folder_path):
+def sum_tofs_named(folder_path):
 
     surface_list = ["SQA","SQE","IB","PFPE","OA"]
     transition_list = ["Q11","Q12","Q13","Q14","Q15"]
@@ -181,5 +181,32 @@ def sum_tofs(folder_path):
                     image = read_image(root+"/"+file)
                     delay = simple_split(file, "ChC")
                     summed_images[:,:,surface_index,transition_index,delay_list.index(delay)] = summed_images[:,:,surface_index,transition_index,delay_list.index(delay)] + image
+
+    return summed_images, delay_list
+
+def sum_tofs(path_list, delimiter):
+
+    num_tofs = len(path_list)
+    delay_list = []
+
+    for root, dirs, files in os.walk(path_list[0]):
+        for file in files:
+            part_list = file.split(delimiter)
+            for part in part_list:
+                if part.isnumeric():
+                    delay = part
+                    if not delay in delay_list:
+                        delay_list.append(delay)
+    
+    delay_list.sort()
+
+    summed_images = numpy.zeros((420,420,len(delay_list)))
+
+    for i in range(num_tofs):
+        for root, dirs, files in os.walk(path_list[i]):
+            for file in files:
+                delay = simple_split(file, delimiter)
+                image = read_image(root+"/"+file)
+                summed_images[:,:,delay_list.index(delay)] = summed_images[:,:,delay_list.index(delay)] + image
 
     return summed_images, delay_list
