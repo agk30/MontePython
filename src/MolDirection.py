@@ -1,11 +1,10 @@
 import direction_gen
-import Inputs
 
 class Direction:
-    def __init__(self, type, inputs):
+    def __init__(self, inputs, type):
         if type == 1:
-            self.value = direction_gen.ingoing_direction(Inputs.valveRad, Inputs.valvePos, Inputs.skimRad, Inputs.skimPos, Inputs.colRad, Inputs.colPos)
+            self.value = direction_gen.ingoing_direction(inputs.valveRad, inputs.valvePos, inputs.skimRad, inputs.skimPos, inputs.colRad, inputs.colPos)
         elif type == 2:
-            self.value = direction_gen.cosine_distribution(Inputs.cosinePower)
+            self.value = direction_gen.cosine_distribution(inputs.cosinePower)
         else:
-            print ("invalid direction-type number")
+            print ("MolDirection error: invalid direction-type number")

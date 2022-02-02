@@ -113,10 +113,18 @@ def simple_split(file_path, delimiter):
     stem = file_path[0]
     name_list = stem.split(delimiter)
 
+    found_delay = False
+
     for name in name_list:
         if name.isnumeric():
             delay =  name
-            return delay
+            found_delay = True
+            
+    if found_delay:
+        return delay
+    else:
+        print ("No delay found in image file name, did you use the right delimiter?")
+        sys.exit()
 
 def residuals(x, sin, sout):
 

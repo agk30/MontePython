@@ -7,6 +7,8 @@ import shutil
 # get folder path from command line argument
 folder_path = roi.get_args(sys.argv[1:])
 
+centre_point = [294, 210]
+#centre_point = [283, 210]
 ###############################################################
 # parameters (these should really be given via command line but
 # haven't gotten round to setting all that up yet ¯\_(ツ)_/¯ )
@@ -21,11 +23,11 @@ yPx = 420
 
 max_radius = 130
 
-startTime = 38
-endTime = 148
+startTime = 68
+endTime = 178
 timeStep = 2
 
-delimiter = "ChC"
+delimiter = "_"
 
 output_directory = "Output Data"
 
@@ -47,6 +49,7 @@ half_arc_step = (max_radius/num_arcs)/2
 
 # arrays initialised
 image = numpy.zeros((xPx,yPx))
+bg_image = numpy.zeros((xPx,yPx))
 outputArray = numpy.zeros((num_arcs,num_wedges,int((endTime-startTime)/timeStep)+1,2))
 
 # generates lists of radius boundaries and wedge boundaries
@@ -72,6 +75,10 @@ timepoint_list = []
 #hacky way of making sure only images that fit the correct timestep are sampled
 previous_value = startTime - timeStep
 # Loops over every file in folder
+
+if include_bg:
+    bg_image = roi.read_image(bg_image_path)
+
 for root, dirs, files in os.walk(folder_path):
     for name in files:
         file_path = root + "/" + name
@@ -83,6 +90,7 @@ for root, dirs, files in os.walk(folder_path):
                 print ('Processing '+name,end='\r')
                 # For each file, data are read into the image matrix
                 image = roi.read_image(file_path)
+                image = image - bg_image
                 # image goes to be processed, assigning the pixel intensity to the correct ROI
                 outputArray[:,:,int((int(delay)-startTime)/timeStep),1] = roi.roi_assign(xPx, yPx, centre_point, radius, wedge, num_arcs, num_wedges, image)
                 previous_value = delay
@@ -108,7 +116,11 @@ for j in range(num_wedges):
         normalised_array = write_array.copy()
         for i in range(num_arcs):
             max_value = max(write_array[:,i])
-            normalised_array[:,i] = normalised_array[:,i]/max_value
+            if max_value > 0:
+                normalised_array[:,i] = normalised_array[:,i]/max_value
+            else:
+                print ("Exiting: Image wasn't properly read, possible cause is the choice of delimiter for extracting delay from image.")
+                sys.exit()
         
         # staples the delay list to the ROI data
         write_array = numpy.hstack((delay_list,write_array))

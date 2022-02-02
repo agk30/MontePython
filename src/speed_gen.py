@@ -180,7 +180,7 @@ def multi_gauss_speed(gauss_mean_array, gauss_sigma_array, gauss_weight_array, d
         w_upper = w_upper + gauss_weight_array[i]
 
         if (rand > w_lower) and (rand < w_upper):
-            arrival_time = random.normal(gauss_mean_array[i], gauss_sigma_array[i])
+            arrival_time = numpy.random.normal(gauss_mean_array[i], gauss_sigma_array[i])
         
         w_lower =  w_lower + gauss_weight_array[i]
 
