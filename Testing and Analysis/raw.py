@@ -3,18 +3,20 @@ import numpy
 import os
 import sys
 import shutil
+import matplotlib.pyplot as plt
 
 # get folder path from command line argument
-folder_path = roi.get_args(sys.argv[1:])
+#folder_path = roi.get_args(sys.argv[1:])
 
-centre_point = [294, 210]
-#centre_point = [283, 210]
+folder_path = roi.get_input_folder()
+
 ###############################################################
 # parameters (these should really be given via command line but
 # haven't gotten round to setting all that up yet ¯\_(ツ)_/¯ )
 ###############################################################
 
-centre_point = [283, 210]
+#centre_point = [283, 210]
+centre_point = [294, 210]
 num_arcs = 7
 num_wedges = 12
 
@@ -23,13 +25,19 @@ yPx = 420
 
 max_radius = 130
 
-startTime = 68
-endTime = 178
+#startTime = 68
+startTime = 98
+#startTime = 38
+#endTime = 178
+endTime = 208
+#endTime = 148
 timeStep = 2
 
 delimiter = "_"
 
 output_directory = "Output Data"
+
+bother_graphing = False
 
 ################################################################
 # End of input parameters
@@ -76,9 +84,6 @@ timepoint_list = []
 previous_value = startTime - timeStep
 # Loops over every file in folder
 
-if include_bg:
-    bg_image = roi.read_image(bg_image_path)
-
 for root, dirs, files in os.walk(folder_path):
     for name in files:
         file_path = root + "/" + name
@@ -118,9 +123,9 @@ for j in range(num_wedges):
             max_value = max(write_array[:,i])
             if max_value > 0:
                 normalised_array[:,i] = normalised_array[:,i]/max_value
-            else:
-                print ("Exiting: Image wasn't properly read, possible cause is the choice of delimiter for extracting delay from image.")
-                sys.exit()
+            #else:
+                #print ("Exiting: Image wasn't properly read, possible cause is the choice of delimiter for extracting delay from image.")
+                #sys.exit()
         
         # staples the delay list to the ROI data
         write_array = numpy.hstack((delay_list,write_array))
@@ -149,6 +154,15 @@ array[:,1] = wedge
 with open(output_directory+'/parameters.txt','wb') as f:
     header_str = 'start time = '+str(startTime)+', end time = '+str(endTime)+', num radii = '+str(num_arcs)+', num angles = '+str(num_wedges)
     numpy.savetxt(f, array , fmt='%s', delimiter=',',header=header_str)
+
+if bother_graphing:
+    real_data = numpy.loadtxt(r"C:\Users\adam\Desktop\Book2.csv", delimiter=',')
+
+    probe_array = outputArray[3,6,:,1].copy()
+    maximum = max(probe_array)
+
+    plt.plot(delay_list, probe_array/maximum, delay_list, real_data[:,1])
+    plt.show()
 
 print ('')
 print ('Done',end='\r')

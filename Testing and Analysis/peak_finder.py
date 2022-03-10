@@ -11,6 +11,7 @@ input_path = askopenfilename()
 
 min_peak_height = 0.0015
 
+# try to use 'with open()' as much as you can for handling files, it essentially makes sure the file is closed properly once you are done using it
 with open(input_path,'r') as file:
 
     # take spectrum file and take only the list of wavelengths and the background subtracted column

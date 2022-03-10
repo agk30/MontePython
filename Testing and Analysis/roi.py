@@ -3,6 +3,8 @@ import math
 import sys
 import getopt
 import os
+from tkinter import Tk     # from Tkinter import Tk for earlier than Python 3.x
+from tkinter.filedialog import askdirectory, askopenfilename
 
 def arc_wedge(dist_from_centre, column, centre_point, max_num_radii, max_num_wedges, radius, wedge):
     # finds the arc in which the pixel lies
@@ -218,3 +220,21 @@ def sum_tofs(path_list, delimiter):
                 summed_images[:,:,delay_list.index(delay)] = summed_images[:,:,delay_list.index(delay)] + image
 
     return summed_images, delay_list
+
+def get_input_folder():
+
+    # we don't want a full GUI, so keep the root window from appearing
+    Tk().withdraw() 
+    # show an "Open" dialog box and return the path to the selected file
+    input_path = askdirectory() 
+    
+    return input_path
+
+def get_input_file():
+
+    # we don't want a full GUI, so keep the root window from appearing
+    Tk().withdraw() 
+    # show an "Open" dialog box and return the path to the selected file
+    input_path = askopenfilename() 
+
+    return input_path
